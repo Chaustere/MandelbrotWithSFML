@@ -145,7 +145,7 @@ int main()
 
 		if (!hasCalculated)
 		{
-			sf::RectangleShape calcArea(sf::Vector2f(3, 2));
+			sf::RectangleShape calcArea(sf::Vector2f(3, 2.5));
 			calcArea.setPosition(sf::Vector2f(-2, -1.25));
 			calcCList(std::ref(window), &cList, x_acc, y_acc, maxIter, calcArea);
 
