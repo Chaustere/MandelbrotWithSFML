@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <complex>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
@@ -10,6 +11,7 @@
 long double modulus(sf::Vector2f c);
 
 void seqFunc(sf::Vector2f* seq, sf::Vector2f c);
+void seqFunc(std::complex<long double>* seq, std::complex<long double> c);
 
 void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc, int y_acc, sf::RectangleShape calcArea, int maxIter, long double zoomFactor);
 
@@ -183,19 +185,29 @@ void seqFunc(sf::Vector2f* seq, sf::Vector2f c)
 	*seq = sf::Vector2f(pow(seq->x, 2) - pow(seq->y, 2) + c.x, 2 * seq->x * seq->y + c.y);
 }
 
+void seqFunc(std::complex<long double>* seq, std::complex<long double> c)
+{
+	// The function that determines if a point belongs to the Mandelbrot Set
+	//*seq = std::pow(*seq, 3) + c;
+	*seq = std::pow(*seq, 2) + c;
+}
+
 void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc, int y_acc, sf::RectangleShape calcArea, int maxIter, long double zoomFactor)
 {
 	// This function determines which point of a set column belongs to the Mandelbrot Set
 	for (int y = 0; y < y_acc; y++)  // y_acc = number of points in column
 	{
-		sf::Vector2f seq(0, 0); // The start of the sequence
-		sf::Vector2f c((calcArea.getSize().x * (long double)x / (long double)x_acc) + calcArea.getPosition().x, (calcArea.getSize().y * (long double)y / (long double)y_acc) + calcArea.getPosition().y);  // The point we are trying to determine
+		//sf::Vector2f seq(0, 0); // The start of the sequence
+		std::complex<long double> zSeq(0, 0);
 
+		sf::Vector2f c(0, 0);  // The point we are trying to determine :
+		std::complex<long double> z((calcArea.getSize().x * (long double)x / (long double)x_acc) + calcArea.getPosition().x, (calcArea.getSize().y * (long double)y / (long double)y_acc) + calcArea.getPosition().y);
+		
 		sf::Color cl(0, 0, 0);
 		for (int i = 0; i < maxIter; i++)
 		{
-			seqFunc(&seq, c);
-			if (modulus(seq) > 2)
+			seqFunc(&zSeq, z);
+			if (std::abs(zSeq) > 2)
 			{
 				long double clVal = ((long double)i / (long double)400) * 255; // Color change Value, we are making the color of the points not belonging to the Mandelbrot Set
 				cl.r = 10 + clVal * 2;
@@ -205,8 +217,8 @@ void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc,
 			}
 		}
 
-		c.x = (c.x - calcArea.getPosition().x) * zoomFactor; // c contains the coordinates of the point, which are usually contained between -3 and 3
-		c.y = (c.y - calcArea.getPosition().y) * zoomFactor; // Here we enlarge the resulting image, because before that point it is approximatively  6 pixels * 6 pixels, which is small
+		c.x = (z.real() - calcArea.getPosition().x) * zoomFactor; // c contains the coordinates of the point, which are usually contained between -3 and 3
+		c.y = (z.imag() - calcArea.getPosition().y) * zoomFactor; // Here we enlarge the resulting image, because before that point it is approximatively  6 pixels * 6 pixels, which is small
 		mtx.lock();
 		cList->append(sf::Vertex(c, cl));
 		mtx.unlock();
