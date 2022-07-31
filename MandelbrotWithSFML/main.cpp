@@ -32,7 +32,7 @@ int main()
 	///------- Creation of the window -------///
 
 	// The following line registers all fullscreen modes are available for this computer
-	std::vector<sf::VideoMode> modes = sf::VideoMode::getFullscreenModes();
+	//std::vector<sf::VideoMode> modes = sf::VideoMode::getFullscreenModes();
 	sf::VideoMode deskMode = sf::VideoMode::getDesktopMode();
 
 	// Using the following method make the window be in fullscreen mode at the start of the program
