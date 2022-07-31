@@ -112,15 +112,15 @@ int main()
 						calcArea.setOrigin(0, 0);
 						calcArea.setPosition(zoomRect.getPosition().x / lastZoomFactor - calcArea.getSize().x / 2 + lastCalcArea.getPosition().x, zoomRect.getPosition().y / lastZoomFactor - calcArea.getSize().y / 2 + lastCalcArea.getPosition().y);
 
-						std::cout << lastZoomFactor << ' ' << calcArea.getSize().x << ' ' << calcArea.getSize().y << "\n";
-						std::cout << lastZoomFactor << ' ' << lastCalcArea.getPosition().x << ' ' << calcArea.getPosition().y << "\n";
+						std::cout << lastZoomFactor << ' ' << calcArea.getSize().x << ' ' << calcArea.getSize().y << std::endl;
+						std::cout << lastZoomFactor << ' ' << lastCalcArea.getPosition().x << ' ' << calcArea.getPosition().y << std::endl;
 
 						calcCList(std::ref(window), &cList, x_acc, y_acc, maxIter, calcArea);
 
-						std::cout << "\n" << cList[0].position.x << ' ' << cList[0].position.y << "\n";
-						std::cout << "\n" << cList[1].position.x << ' ' << cList[1].position.y << "\n";
-						std::cout << "\n" << cList[2].position.x << ' ' << cList[2].position.y << "\n";
-						std::cout << cList[cList.getVertexCount() - 1].position.x << ' ' << cList[cList.getVertexCount() - 1].position.y << "\n";
+						std::cout << std::endl << cList[0].position.x << ' ' << cList[0].position.y << std::endl;
+						std::cout << std::endl << cList[1].position.x << ' ' << cList[1].position.y << std::endl;
+						std::cout << std::endl << cList[2].position.x << ' ' << cList[2].position.y << std::endl;
+						std::cout << cList[cList.getVertexCount() - 1].position.x << ' ' << cList[cList.getVertexCount() - 1].position.y << std::endl;
 					}
 
 					break;
@@ -147,7 +147,7 @@ int main()
 			hasCalculated = true;
 
 			std::cout << "\n Calculation done" << '\n';
-			std::cout << "Antialiasing level : " << window.getSettings().antialiasingLevel << "\n";
+			std::cout << "Antialiasing level : " << window.getSettings().antialiasingLevel << std::endl;
 		}
 
 		///----------------------///
@@ -232,7 +232,7 @@ void calcCList(sf::RenderWindow& window, sf::VertexArray* cList, int x_acc, int 
 			ths[t].join();
 		}
 	}
-	std::cout << cList->getVertexCount() << "\n";
+	std::cout << cList->getVertexCount() << std::endl;
 }
 
 bool belongsToVArray(sf::VertexArray* vArray, sf::Vector2f position)
