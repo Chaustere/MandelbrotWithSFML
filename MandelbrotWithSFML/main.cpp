@@ -7,11 +7,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
+#include "CNumber.h"
 
 long double modulus(sf::Vector2f c);
 
 void seqFunc(sf::Vector2f* seq, sf::Vector2f c);
 void seqFunc(std::complex<long double>* seq, std::complex<long double> c);
+void seqFunc(CNumber<long double>* seq, CNumber<long double> c);
 
 void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc, int y_acc, sf::RectangleShape calcArea, int maxIter, long double zoomFactor);
 
@@ -26,6 +28,7 @@ sf::RectangleShape lastCalcArea;
 
 int main()
 {
+
 	///------- Creation of the window -------///
 
 	// The following line registers all fullscreen modes are available for this computer
@@ -37,12 +40,12 @@ int main()
 	sf::ContextSettings settings(0U, 0U, 16);
 	// Initializes the window with a width of 512 pixels and a height of 256 pixels
 	sf::RenderWindow window(deskMode, "Mandelbrot Set", sf::Style::Default, settings);
-	
+
 	// Sets the framerate limit of the window
 	window.setFramerateLimit(60);
 
 	///--------------------------------------///
-	
+
 	// Variables declarations //
 
 	sf::VertexArray cList(sf::PrimitiveType::Points, 0);
@@ -53,7 +56,7 @@ int main()
 	bool hasCalculated = false;
 
 	int maxIter = 400; // Number of iterations before concluding a point belongs to the Mandelbrot Set
-	
+
 	//------------------------//
 
 	// Rectangle around cursor //
@@ -137,12 +140,12 @@ int main()
 
 
 		///--- Program logics ---///
-		
+
 		zoomRect.setPosition(sf::Vector2f(window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(window)))));
 
 		if (!hasCalculated)
 		{
-			sf::RectangleShape calcArea(sf::Vector2f(3, 2.5));
+			sf::RectangleShape calcArea(sf::Vector2f(3, 2));
 			calcArea.setPosition(sf::Vector2f(-2, -1.25));
 			calcCList(std::ref(window), &cList, x_acc, y_acc, maxIter, calcArea);
 
@@ -192,6 +195,13 @@ void seqFunc(std::complex<long double>* seq, std::complex<long double> c)
 	*seq = std::pow(*seq, 2) + c;
 }
 
+void seqFunc(CNumber<long double>* seq, CNumber<long double> c)
+{
+	// The function that determines if a point belongs to the Mandelbrot Set
+	//*seq = std::pow(*seq, 3) + c;
+	seq->raiseToPow(2);
+	*seq += c;
+}
 void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc, int y_acc, sf::RectangleShape calcArea, int maxIter, long double zoomFactor)
 {
 	// This function determines which point of a set column belongs to the Mandelbrot Set
@@ -199,15 +209,16 @@ void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc,
 	{
 		//sf::Vector2f seq(0, 0); // The start of the sequence
 		std::complex<long double> zSeq(0, 0);
+		CNumber<long double> cSeq(0, 0);
 
 		sf::Vector2f c(0, 0);  // The point we are trying to determine :
-		std::complex<long double> z((calcArea.getSize().x * (long double)x / (long double)x_acc) + calcArea.getPosition().x, (calcArea.getSize().y * (long double)y / (long double)y_acc) + calcArea.getPosition().y);
-		
+		//std::complex<long double> z((calcArea.getSize().x * (long double)x / (long double)x_acc) + calcArea.getPosition().x, (calcArea.getSize().y * (long double)y / (long double)y_acc) + calcArea.getPosition().y);
+		CNumber<long double> z((calcArea.getSize().x * (long double)x / (long double)x_acc) + calcArea.getPosition().x, (calcArea.getSize().y * (long double)y / (long double)y_acc) + calcArea.getPosition().y);
 		sf::Color cl(0, 0, 0);
 		for (int i = 0; i < maxIter; i++)
 		{
-			seqFunc(&zSeq, z);
-			if (std::abs(zSeq) > 2)
+			seqFunc(&cSeq, z);
+			if (cSeq.mag() > 2)
 			{
 				long double clVal = ((long double)i / (long double)400) * 255; // Color change Value, we are making the color of the points not belonging to the Mandelbrot Set
 				cl.r = 10 + clVal * 2;
@@ -217,8 +228,8 @@ void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc,
 			}
 		}
 
-		c.x = (z.real() - calcArea.getPosition().x) * zoomFactor; // c contains the coordinates of the point, which are usually contained between -3 and 3
-		c.y = (z.imag() - calcArea.getPosition().y) * zoomFactor; // Here we enlarge the resulting image, because before that point it is approximatively  6 pixels * 6 pixels, which is small
+		c.x = (z.getReal() - calcArea.getPosition().x) * zoomFactor; // c contains the coordinates of the point, which are usually contained between -3 and 3
+		c.y = (z.getImag() - calcArea.getPosition().y) * zoomFactor; // Here we enlarge the resulting image, because before that point it is approximatively  6 pixels * 6 pixels, which is small
 		mtx.lock();
 		cList->append(sf::Vertex(c, cl));
 		mtx.unlock();
