@@ -25,6 +25,7 @@ std::mutex mtx;
 const int threadNumber = 10; // Number of threads running at the same time
 long double lastZoomFactor = 0;  // Last Zoom Factor
 sf::RectangleShape lastCalcArea;
+sf::Image lastImg;
 
 int main()
 {
@@ -41,6 +42,11 @@ int main()
 	// Initializes the window with a width of 512 pixels and a height of 256 pixels
 	sf::RenderWindow window(deskMode, "Mandelbrot Set", sf::Style::Default, settings);
 
+	// Creates a render-texture, which will contain what the window displays
+	sf::RenderTexture texture;
+	if (!texture.create(window.getSize().x, window.getSize().y))
+		return -1;
+
 	// Sets the framerate limit of the window
 	window.setFramerateLimit(60);
 
@@ -54,6 +60,7 @@ int main()
 	int y_acc = deskMode.height * accFactor; // Y Accuracy
 
 	bool hasCalculated = false;
+	bool hasUpdated = false;
 
 	int maxIter = 400; // Number of iterations before concluding a point belongs to the Mandelbrot Set
 
@@ -96,6 +103,7 @@ int main()
 				{
 					sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 					window.setView(sf::View(visibleArea));  // Unstretching the figure
+					texture.setView(sf::View(visibleArea));
 
 					x_acc = event.size.width * accFactor;  // Resizing the pixels number in the vertex array
 					y_acc = event.size.height * accFactor;
@@ -104,6 +112,8 @@ int main()
 					zoomRect.setSize(sf::Vector2f(zoomRectBaseWidth, zoomRectBaseWidth * event.size.height / event.size.width));
 					zoomRect.setOrigin(sf::Vector2f(zoomRect.getSize().x / 2, zoomRect.getSize().y / 2)); // Resizing and repositionning the zoom rectangle
 					std::cout << "Resized : " << window.getSize().x << ' ' << window.getSize().y << std::endl;
+
+					hasUpdated = true;
 				}
 
 				case sf::Event::MouseButtonReleased:  // Zooming
@@ -126,6 +136,8 @@ int main()
 						std::cout << std::endl << cList[1].position.x << ' ' << cList[1].position.y << std::endl;
 						std::cout << std::endl << cList[2].position.x << ' ' << cList[2].position.y << std::endl;
 						std::cout << cList[cList.getVertexCount() - 1].position.x << ' ' << cList[cList.getVertexCount() - 1].position.y << std::endl;
+
+						hasUpdated = true;
 					}
 
 					break;
@@ -153,15 +165,32 @@ int main()
 
 			std::cout << "\n Calculation done" << '\n';
 			std::cout << "Antialiasing level : " << window.getSettings().antialiasingLevel << std::endl;
+
+			hasUpdated = true;
 		}
 
 		///----------------------///
 
 		///--- Rendering the window ---///
 
+		if (hasUpdated)
+		{
+			lastImg = texture.getTexture().copyToImage();
+			if (lastImg.saveToFile("LastImg.png"))
+				std::cout << "Image saved succesfully !" << std::endl;
+
+			texture.clear(sf::Color(50, 10, 255));
+			texture.draw(cList);
+			texture.display();
+
+			hasUpdated = false;
+		}
+
 		// This method fills the screen with white, acts as a refresh
 		window.clear(sf::Color(50, 10, 255));
-		window.draw(cList);
+
+		window.draw(sf::Sprite(texture.getTexture()));
+		//window.draw(cList);
 		window.draw(zoomRect);
 
 		/// Here will go the drawings (e.g. window.draw(someVertex); );
@@ -202,6 +231,7 @@ void seqFunc(CNumber<long double>* seq, CNumber<long double> c)
 	seq->raiseToPow(2);
 	*seq += c;
 }
+
 void calcCol(sf::RenderWindow& window, sf::VertexArray* cList, int x, int x_acc, int y_acc, sf::RectangleShape calcArea, int maxIter, long double zoomFactor)
 {
 	// This function determines which point of a set column belongs to the Mandelbrot Set
